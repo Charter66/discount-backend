@@ -4,7 +4,6 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header("Access-Control-Allow-Headers: Content-Type");
 
-
 // Database configuration
 $host = 'localhost'; // Your database host
 $username = 'root';  // Your database username
@@ -23,10 +22,10 @@ if ($conn->connect_error) {
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (isset($data['code'])) {
-    $discountCode = $data['code'];
+    $discountCode = $conn->real_escape_string($data['code']); // Sanitize input
 
     // Prepare and execute the SQL query to check if the discount code exists in the table
-    $sql = "SELECT * FROM discount_code WHERE LAZAR = 'DISCOUNT'";
+    $sql = "SELECT * FROM discount_code WHERE LAZAR = '$discountCode'";
 
     $result = $conn->query($sql);
 
@@ -38,8 +37,7 @@ if (isset($data['code'])) {
         echo json_encode(array('message' => 'Invalid discount code.'));
     }
 } else {
-    echo json_encode(array('message' => 'Discount code not provided
-    .'));
+    echo json_encode(array('message' => 'Discount code not provided.'));
 }
 
 // Close the database connection
