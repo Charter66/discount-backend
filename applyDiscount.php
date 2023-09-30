@@ -21,24 +21,33 @@ if ($conn->connect_error) {
 // Get the discount code from the POST request
 $data = json_decode(file_get_contents("php://input"), true);
 
+$response = [];
+
 if (isset($data['code'])) {
     $discountCode = $conn->real_escape_string($data['code']); // Sanitize input
 
-    // Prepare and execute the SQL query to check if the discount code exists in the table
-    $sql = "SELECT * FROM discount_code WHERE LAZAR = '$discountCode'";
+    // Update the SQL query to fetch the percentage from the table if the code exists
+    $sql = "SELECT percentage FROM discount_code WHERE LAZAR = '$DISCOUNT' ";
 
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
         // Code exists in the table (valid)
-        echo json_encode(array('message' => 'Discount applied successfully.'));
+        $row = $result->fetch_assoc();
+        $response['status'] = 'success';
+        $response['message'] = 'Discount applied successfully.';
+        $response['percentage'] = $row['percentage'];
     } else {
         // Code does not exist in the table (invalid)
-        echo json_encode(array('message' => 'Invalid discount code.'));
+        $response['status'] = 'error';
+        $response['message'] = 'Invalid discount code.';
     }
 } else {
-    echo json_encode(array('message' => 'Discount code not provided.'));
+    $response['status'] = 'error';
+    $response['message'] = 'Discount code not provided.';
 }
+
+echo json_encode($response);
 
 // Close the database connection
 $conn->close();
